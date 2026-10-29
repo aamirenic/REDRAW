@@ -1,0 +1,13 @@
+[package]
+name = "redraw-sampler"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+redraw-dsp = { path = "../dsp" }
+hound = { workspace = true }
+
+[lib]
+name = "redraw_sampler"

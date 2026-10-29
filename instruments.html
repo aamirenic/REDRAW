@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instruments — REDRAW</title>
+  <meta name="description" content="Explore all 49 original REDRAW instrument engines: wavetable, FM, subtractive, additive, physical, drum, granular, and sampler families.">
+  <meta name="theme-color" content="#f2eee3">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body data-page="instruments">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="1" y="1" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M6 21h5l3-9 4 17 4-13 3 8 9-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="6" cy="21" r="1.7" fill="#ef4e22"/>
+        </svg>
+        <span class="brand-type">
+          <span class="brand-word">REDRAW</span>
+          <span class="brand-sub">Clean-room audio workstation</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-link" href="index.html">Overview</a>
+        <a class="nav-link" href="instruments.html" aria-current="page">Instruments</a>
+        <a class="nav-link" href="effects.html">Effects</a>
+        <a class="nav-link" href="engine.html">Engine</a>
+      </nav>
+      <div class="header-tools">
+        <span class="header-status"><span class="status-dot"></span> Engine ready</span>
+        <a class="btn btn-sm btn-primary header-cta" href="index.html#console">Live console</a>
+        <button class="menu-btn" id="menu-open" type="button" aria-label="Open menu" aria-controls="site-menu" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <noscript>
+    <div class="noscript-banner">
+      <div class="container"><strong>JavaScript is off.</strong> The live console, interactive catalog tools, and audio labs need it. The written notes and static catalog list are still readable.</div>
+    </div>
+    <nav class="nojs-nav" aria-label="Primary">
+      <div class="container">
+        <a href="index.html">Overview</a>
+        <a href="instruments.html" aria-current="page">Instruments</a>
+        <a href="effects.html">Effects</a>
+        <a href="engine.html">Engine</a>
+      </div>
+    </nav>
+  </noscript>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="container page-hero-grid">
+        <div>
+          <p class="kicker"><span class="dot"></span> Catalog / 49 instruments</p>
+          <h1 class="display">49 ways to make a <em>sound.</em></h1>
+          <p class="lede">Eight original engine families. One shared 64-voice pool. Every patch generated in code — no preset files, no sample library, no borrowed waveforms.</p>
+        </div>
+        <section class="page-hero-aside" aria-label="Instrument family breakdown">
+          <div class="hero-total">
+            <strong data-count="49">49</strong>
+            <span>instrument engines across eight families</span>
+          </div>
+          <div class="family-bar" id="family-bar" aria-hidden="true"></div>
+          <div class="family-legend" id="family-legend"></div>
+          <p class="hero-note">Counts reflect the shipped registry. Sampler and Soundfont Player accept user-supplied content; every other family ships with generated patches.</p>
+        </section>
+      </div>
+    </section>
+
+    <div class="catalog-toolbar">
+      <div class="container">
+        <div class="toolbar-inner">
+          <div class="filter-chips" id="instrument-filters" role="group" aria-label="Filter instruments by engine family"></div>
+          <div class="search">
+            <label class="sr-only" for="instrument-search">Search instruments</label>
+            <input id="instrument-search" type="search" placeholder="Search engines, families, capabilities" autocomplete="off">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.5 12.5 18 18"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="catalog-body" aria-label="Instrument catalog">
+      <div class="container">
+        <h2 class="sr-only">Instrument catalog</h2>
+        <div class="result-line">
+          <span><strong id="instrument-count">49</strong> engines shown</span>
+          <span class="result-hint">Click a name for engine notes · audition in the browser</span>
+        </div>
+        <div class="catalog-grid" id="instrument-grid"><!-- NOSCRIPT:INSTRUMENTS:START -->
+        <noscript>
+          <section class="nojs-catalog" aria-label="Static instrument catalog">
+            <p class="nojs-catalog-lede">JavaScript is off. This static catalog lists all 49 engines by family. Interactive auditions and engine notes need JavaScript.</p>
+            <section class="nojs-group">
+              <h3>Subtractive <span>14</span></h3>
+              <p class="nojs-group-note">Three oscillators, noise, a state-variable filter, two envelopes, two LFOs, unison and glide.</p>
+              <ul>
+                <li><strong>Triple Osc</strong><span>Three-oscillator subtractive synth</span></li>
+                <li><strong>Circuit Bass</strong><span>resonant acid bass</span></li>
+                <li><strong>Orbit</strong><span>Vintage polysynth</span></li>
+                <li><strong>Orbit X</strong><span>Vintage polysynth variant</span></li>
+                <li><strong>Sawline</strong><span>Unison saw synth</span></li>
+                <li><strong>Zone</strong><span>Two-oscillator subtractive</span></li>
+                <li><strong>Simplex</strong><span>Two-oscillator plus sub</span></li>
+                <li><strong>Stinger</strong><span>Gritty two-oscillator synth</span></li>
+                <li><strong>Stinger XT</strong><span>Three-oscillator synth</span></li>
+                <li><strong>MiniVee</strong><span>warm three-oscillator synth</span></li>
+                <li><strong>Groove Engine</strong><span>Groovebox-style synth</span></li>
+                <li><strong>AcidBox</strong><span>Acid mono bass</span></li>
+                <li><strong>BassBox</strong><span>Sub/saw bass</span></li>
+                <li><strong>SynthBox</strong><span>General subtractive voice</span></li>
+              </ul>
+            </section>
+            <section class="nojs-group">
+              <h3>Wavetable <span>3</span></h3>
+              <p class="nojs-group-note">Two table oscillators over six generated tables, crossblend, unison, filter and vibrato.</p>
+              <ul>
+                <li><strong>Aurora</strong><span>Wavetable synth</span></li>
+                <li><strong>Wildcard</strong><span>Bright wavetable synth</span></li>
+                <li><strong>PadBox</strong><span>Warm pad synth</span></li>
+              </ul>
+            </section>
+            <section class="nojs-group">
+              <h3>FM <span>3</span></h3>
+              <p class="nojs-group-note">Six operators, four algorithms, feedback, a filter and two envelopes.</p>
+              <ul>
+                <li><strong>Hexad FM</strong><span>Six-operator FM flagship</span></li>
+                <li><strong>Ember FM</strong><span>Six-operator FM with filter</span></li>
+                <li><strong>DX Pair</strong><span>Two-operator FM preset</span></li>
+              </ul>
+            </section>
+            <section class="nojs-group">
+              <h3>Additive / formant <span>10</span></h3>
+              <p class="nojs-group-note">Sixteen partials, five vowel formants, prism drift, blur and vibrato.</p>
+              <ul>
+                <li><strong>Prism</strong><span>Additive harmonic flagship</span></li>
+                <li><strong>Vowel</strong><span>Vowel formant synth</span></li>
+                <li><strong>Prism Lite</strong><span>Harmonic subtractive synth</span></li>
+                <li><strong>Shapeshift</strong><span>Additive morph synth</span></li>
+                <li><strong>Forge</strong><span>Bright additive synth</span></li>
+                <li><strong>VoxForm</strong><span>Formant vocalizer</span></li>
+                <li><strong>Spectral Map</strong><span>Harmonic bitmap-style synth</span></li>
+                <li><strong>KeyForge</strong><span>Electric piano</span></li>
+                <li><strong>VocalDance</strong><span>Vocal formant synth</span></li>
+                <li><strong>PianoBox</strong><span>Compact piano</span></li>
+              </ul>
+            </section>
+            <section class="nojs-group">
+              <h3>Physical <span>3</span></h3>
+              <p class="nojs-group-note">Two detuned damped strings, pick excitation, body tone and a sub oscillator.</p>
+              <ul>
+                <li><strong>Petal</strong><span>Plucked-string physical model</span></li>
+                <li><strong>StringStorm</strong><span>Karplus-Strong guitar</span></li>
+                <li><strong>PluckBass</strong><span>Plucked bass</span></li>
+              </ul>
+            </section>
+            <section class="nojs-group">
+              <h3>Drum <span>8</span></h3>
+              <p class="nojs-group-note">Six synthesized drum voices plus kit key-mapping.</p>
+              <ul>
+                <li><strong>PadForge</strong><span>Sixteen-pad drum module</span></li>
+                <li><strong>KickOne</strong><span>Sine kick synth</span></li>
+                <li><strong>SubKick</strong><span>long-tail kick synth</span></li>
+                <li><strong>DrumCell</strong><span>Four-partial drum voice</span></li>
+                <li><strong>Membrane</strong><span>Physical drum model</span></li>
+                <li><strong>DrumLab</strong><span>Eight-voice drum kit</span></li>
+                <li><strong>DrumBox</strong><span>Drum-kit voice</span></li>
+                <li><strong>DrumBox B</strong><span>Alternate drum-kit voice</span></li>
+              </ul>
+            </section>
+            <section class="nojs-group">
+              <h3>Granular <span>2</span></h3>
+              <p class="nojs-group-note">A sixteen-grain cloud over generated tone and noise beds, with window, spray and spread.</p>
+              <ul>
+                <li><strong>GrainMill</strong><span>Granular texture synth</span></li>
+                <li><strong>WarpTrail</strong><span>Granular texture synth</span></li>
+              </ul>
+            </section>
+            <section class="nojs-group">
+              <h3>Sampler <span>6</span></h3>
+              <p class="nojs-group-note">Twelve-voice sample playback with slices, three loop modes, filter envelope and pitch.</p>
+              <ul>
+                <li><strong>Multiwave</strong><span>Sampler voice with generated bed</span></li>
+                <li><strong>ChopLab</strong><span>16-slice transient slicer</span></li>
+                <li><strong>ChopLab 2</strong><span>32-slice chop player</span></li>
+                <li><strong>SliceLab</strong><span>32-slice player</span></li>
+                <li><strong>Sampler</strong><span>Single-sample player</span></li>
+                <li><strong>Soundfont Player</strong><span>Sampler voice with ensemble fallback</span></li>
+              </ul>
+            </section>
+          </section>
+        </noscript>
+<!-- NOSCRIPT:INSTRUMENTS:END --></div>
+        <p class="catalog-footnote">The reference column in the production notes names a capability class, not a feature-for-feature claim. REDRAW ships original, deliberately compact engines with ParamSpec-driven controls. Browser auditions are per-engine sketches; the desktop application runs the full instrument.</p>
+      </div>
+    </section>
+
+    <section class="closing-cta">
+      <svg class="cta-wave" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 214 C90 214 104 168 168 168 S246 226 318 204 S414 116 492 132 S588 236 664 216 S754 96 838 124 S936 238 1014 210 S1116 88 1192 120 S1308 220 1440 176"></path>
+        <path d="M0 244 C110 244 130 206 192 206 S276 254 348 238 S452 166 528 182 S620 258 704 244 S802 148 884 172 S980 258 1062 238 S1168 138 1248 162 S1352 236 1440 208"></path>
+      </svg>
+      <div class="container cta-inner">
+        <div>
+          <h2 class="display">Then give it a <em>room.</em></h2>
+          <p class="cta-copy">Seventy-four original processors, from biquad tone shaping to 32-band vocoding. Build a chain and hear a browser-side sketch.</p>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn-dark" href="effects.html">Explore the effects <span aria-hidden="true">→</span></a>
+          <a class="btn" href="index.html#console">Play the console <span aria-hidden="true">↗</span></a>
+          <p class="cta-note">Original names. Original signal paths.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" style="color: var(--paper);">
+              <rect x="1" y="1" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M6 21h5l3-9 4 17 4-13 3 8 9-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="6" cy="21" r="1.7" fill="#ef4e22"/>
+            </svg>
+            <span class="brand-type">
+              <span class="brand-word">REDRAW</span>
+              <span class="brand-sub">Clean-room audio workstation</span>
+            </span>
+          </a>
+          <p class="footer-note">A pattern-based digital audio workstation built from first principles in Rust. Original engines, original processors, original names.</p>
+        </div>
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <ul>
+            <li><a href="instruments.html">49 instruments</a></li>
+            <li><a href="effects.html">74 effects</a></li>
+            <li><a href="engine.html">Engine notes</a></li>
+            <li><a href="index.html#console">Live console</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Inside</h3>
+          <ul>
+            <li><a href="engine.html#signal-path">Signal path</a></li>
+            <li><a href="engine.html#formats">Project format</a></li>
+            <li><a href="engine.html#export-lab">Export lab</a></li>
+            <li><a href="engine.html#provenance">Provenance</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-word" aria-hidden="true">REDRAW</div>
+      <div class="footer-bottom">
+        <p class="footer-legal">© 2026 REDRAW. Original clean-room work. No third-party DAW code, presets, samples, fonts, icons, artwork, or project files are included. Browser demos are illustrative; the application is a native Rust build.</p>
+        <p>Set in Archivo &amp; IBM Plex Mono · <a href="assets/fonts/OFL-Archivo.txt">OFL</a> / <a href="assets/fonts/OFL-IBMPlexMono.txt">OFL</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <dialog class="instrument-dialog" id="instrument-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-scope">
+      <span class="scope-corner tl" id="dialog-family-label">Engine family</span>
+      <span class="scope-corner tr" id="dialog-index">00 / 49</span>
+      <span class="scope-corner bl" id="dialog-family-name">Family</span>
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="Close instrument details">×</button>
+      <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+        <path class="scope-path ghost" id="dialog-wave-ghost"></path>
+        <path class="scope-path" id="dialog-wave"></path>
+      </svg>
+    </div>
+    <div class="dialog-content">
+      <div class="dialog-kicker">
+        <span class="tag" id="dialog-family-tag">Family</span>
+        <span id="dialog-code">Engine</span>
+      </div>
+      <h2 class="dialog-title" id="dialog-title">Instrument</h2>
+      <p class="dialog-cap" id="dialog-cap">Capability</p>
+      <div class="dialog-grid">
+        <div>
+          <h3>Inside the engine</h3>
+          <p id="dialog-blurb"></p>
+          <ul class="detail-list" id="dialog-details"></ul>
+        </div>
+        <div>
+          <h3>At a glance</h3>
+          <p id="dialog-glance"></p>
+          <p id="dialog-note"></p>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-primary" id="dialog-audition" type="button" aria-pressed="false">Play browser sketch</button>
+        <a class="btn" href="effects.html">Hear the processors</a>
+      </div>
+      <p class="dialog-note">The browser sketch varies this engine’s voice. The desktop engine uses the full instrument and its shared 64-voice pool.</p>
+    </div>
+  </dialog>
+
+  <dialog class="menu-dialog" id="site-menu" aria-label="Site menu">
+    <div class="menu-dialog-inner">
+      <div class="menu-dialog-head">
+        <span class="brand-word">REDRAW</span>
+        <button class="icon-btn" id="menu-close" type="button" aria-label="Close menu">×</button>
+      </div>
+      <nav class="menu-links" aria-label="Mobile">
+        <a href="index.html">Overview <span>00</span></a>
+        <a href="instruments.html">Instruments <span>49</span></a>
+        <a href="effects.html">Effects <span>74</span></a>
+        <a href="engine.html">Engine <span>05</span></a>
+      </nav>
+      <a class="btn btn-primary" href="index.html#console">Open the console</a>
+      <p class="console-note">A browser sketch of the real engine. Audio starts only when you ask.</p>
+    </div>
+  </dialog>
+
+  <div class="sr-only" id="sr-status" aria-live="polite"></div>
+
+  <script src="assets/data.js" defer></script>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[package]
+name = "redraw-mixer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+redraw-dsp = { path = "../dsp" }
+
+[lib]
+name = "redraw_mixer"

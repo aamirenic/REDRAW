@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>REDRAW — Sound, redrawn.</title>
+  <meta name="description" content="REDRAW is an original clean-room digital audio workstation built in Rust: 49 instruments, 74 effects, a 960-PPQ engine, and an interactive browser console.">
+  <meta name="theme-color" content="#f2eee3">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body data-page="home">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="1" y="1" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M6 21h5l3-9 4 17 4-13 3 8 9-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="6" cy="21" r="1.7" fill="#ef4e22"/>
+        </svg>
+        <span class="brand-type">
+          <span class="brand-word">REDRAW</span>
+          <span class="brand-sub">Clean-room audio workstation</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-link" href="index.html" aria-current="page">Overview</a>
+        <a class="nav-link" href="instruments.html">Instruments</a>
+        <a class="nav-link" href="effects.html">Effects</a>
+        <a class="nav-link" href="engine.html">Engine</a>
+      </nav>
+      <div class="header-tools">
+        <span class="header-status"><span class="status-dot"></span> Engine ready</span>
+        <a class="btn btn-sm btn-primary header-cta" href="#console">Live console</a>
+        <button class="menu-btn" id="menu-open" type="button" aria-label="Open menu" aria-controls="site-menu" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <noscript>
+    <div class="noscript-banner">
+      <div class="container"><strong>JavaScript is off.</strong> The live console, interactive catalog tools, and audio labs need it. The written overview and spec sheet are still readable.</div>
+    </div>
+    <nav class="nojs-nav" aria-label="Primary">
+      <div class="container">
+        <a href="index.html" aria-current="page">Overview</a>
+        <a href="instruments.html">Instruments</a>
+        <a href="effects.html">Effects</a>
+        <a href="engine.html">Engine</a>
+      </div>
+    </nav>
+  </noscript>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="kicker"><span class="dot"></span> Clean-room audio workstation <span class="rule"></span> Rust</p>
+          <h1 class="hero-title display">
+            <span class="line">Sound,</span>
+            <span class="line"><em data-text="redrawn.">redrawn.</em></span>
+          </h1>
+          <p class="hero-lede">A complete pattern-based DAW built from first principles in Rust. <strong>49 original instruments. 74 original processors.</strong> Every voice, curve, and file written from scratch.</p>
+          <p class="hero-lede" style="margin-top: 14px; font-size: 0.96rem; color: var(--muted);">No borrowed samples. No traced code. Just a machine for turning intent into sound.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#console">Play the console <span aria-hidden="true">↓</span></a>
+            <a class="btn" href="instruments.html">Explore the rack <span aria-hidden="true">↗</span></a>
+          </div>
+          <dl class="hero-stats">
+            <div class="hero-stat">
+              <dt class="hero-stat-value" data-count="49">49</dt>
+              <dd class="hero-stat-label">Instrument engines</dd>
+            </div>
+            <div class="hero-stat">
+              <dt class="hero-stat-value" data-count="74">74</dt>
+              <dd class="hero-stat-label">Effect processors</dd>
+            </div>
+            <div class="hero-stat">
+              <dt class="hero-stat-value" data-count="960">960</dt>
+              <dd class="hero-stat-label">PPQ transport</dd>
+            </div>
+            <div class="hero-stat">
+              <dt class="hero-stat-value" data-count="0">0</dt>
+              <dd class="hero-stat-label">Borrowed samples</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="console-wrap" id="console">
+          <div class="console-caption">
+            <span>Live console</span>
+            <span class="caption-line"></span>
+            <span>Browser sketch</span>
+          </div>
+          <div class="console" role="group" aria-label="Interactive step sequencer demo">
+            <div class="console-top">
+              <div class="console-brand">
+                <span class="live-dot" aria-hidden="true"></span>
+                <strong>Pattern 01</strong>
+                <span class="console-id">A minor / 16 steps</span>
+              </div>
+              <div class="console-meta">
+                <span class="meta-strong">48 kHz</span>
+                <span>512 frames</span>
+              </div>
+            </div>
+
+            <div class="scope">
+              <canvas class="scope-canvas" id="hero-scope" aria-hidden="true"></canvas>
+              <span class="scope-label tl"><span class="tiny-dot"></span>Scope / post master</span>
+              <span class="scope-label tr" id="scope-state">Idle</span>
+              <span class="scope-label bl">A minor</span>
+              <span class="scope-label br">WebAudio · 16 steps</span>
+            </div>
+
+            <div class="console-transport">
+              <button class="play-btn" id="seq-play" type="button" aria-pressed="false" aria-label="Play pattern">
+                <svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>
+                <svg class="icon-stop" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9"/></svg>
+              </button>
+              <div class="bpm-control">
+                <div class="bpm-readout">
+                  <span class="bpm-value" id="bpm-value">112</span>
+                  <span class="bpm-unit">BPM</span>
+                </div>
+                <input class="range" type="range" id="bpm" min="80" max="150" step="1" value="112" aria-label="Tempo in beats per minute">
+              </div>
+              <div class="transport-readout">
+                <span>Bar 1 / 4</span>
+                <strong id="step-readout">Step 01 / 16</strong>
+              </div>
+            </div>
+
+            <div class="track-list" id="sequencer" role="group" aria-label="Step sequencer pattern" aria-describedby="console-hint"><noscript><p class="noscript-note">The step sequencer and WAV renderer need JavaScript and Web Audio. The rest of this page is static.</p></noscript></div>
+
+            <div class="console-foot">
+              <div class="console-status">
+                <span class="status-dot" id="seq-status-dot" aria-hidden="true"></span>
+                <span id="seq-status" aria-live="polite">Click steps to redraw the pattern</span>
+                <a class="console-download" id="seq-download" href="#" download>Download WAV</a>
+              </div>
+              <div class="console-actions">
+                <label class="console-length" for="seq-bars"><span>Bars</span>
+                  <select id="seq-bars">
+                    <option value="2" selected>2</option>
+                    <option value="4">4</option>
+                    <option value="8">8</option>
+                  </select>
+                </label>
+                <button class="console-btn" id="seq-random" type="button">Randomize</button>
+                <button class="console-btn" id="seq-clear" type="button">Clear</button>
+                <button class="console-btn primary" id="seq-render" type="button">Render WAV</button>
+              </div>
+            </div>
+          </div>
+          <p class="console-note" id="console-hint">A WebAudio sketch, not the Rust engine. Click the grid; arrow keys move, Space toggles a step. Press Space on the console to play. Render writes a real 48 kHz / 16-bit WAV of 2, 4, or 8 bars in your browser.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="ticker" role="group" aria-label="Engine facts">
+      <div class="ticker-track">
+        <div class="ticker-group">
+          <span class="ticker-item">49 instrument engines</span>
+          <span class="ticker-item">74 effect processors</span>
+          <span class="ticker-item">960 PPQ transport</span>
+          <span class="ticker-item">64 shared voices</span>
+          <span class="ticker-item">512-frame callback</span>
+          <span class="ticker-item">Lock-free command path</span>
+          <span class="ticker-item">10 rotating snapshots</span>
+          <span class="ticker-item">Zero borrowed samples</span>
+        </div>
+        <div class="ticker-group" aria-hidden="true">
+          <span class="ticker-item">49 instrument engines</span>
+          <span class="ticker-item">74 effect processors</span>
+          <span class="ticker-item">960 PPQ transport</span>
+          <span class="ticker-item">64 shared voices</span>
+          <span class="ticker-item">512-frame callback</span>
+          <span class="ticker-item">Lock-free command path</span>
+          <span class="ticker-item">10 rotating snapshots</span>
+          <span class="ticker-item">Zero borrowed samples</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="section manifesto" id="premise">
+      <div class="container manifesto-grid">
+        <div class="manifesto-aside">
+          <p class="kicker"><span class="dot"></span> 01 / The premise</p>
+        </div>
+        <div class="manifesto-body">
+          <h2 class="display" data-reveal>We didn't copy the sound. We <em>rebuilt</em> the machine.</h2>
+          <div class="manifesto-copy">
+            <p data-reveal>REDRAW began with measurements, not binaries. File inventories. Export tables. String buckets. The observable behavior of a format. From those facts, a new DAW was drawn: original engines, original names, original signal paths, and a clean-room paper trail.</p>
+            <p data-reveal style="--delay: 80ms;">The result is not a clone. It is a working instrument with its own voice, its own architecture, and its own set of deliberate limits. Every DSP path follows published technique; every shipped name belongs to REDRAW.</p>
+          </div>
+          <div class="principles">
+            <article class="principle" data-reveal>
+              <div class="principle-num">01 / Measured</div>
+              <h3>Facts, not decompilation.</h3>
+              <p>Formats and capabilities were mapped from observable behavior, file inventory, and public technique. No engine code was decompiled.</p>
+            </article>
+            <article class="principle" data-reveal style="--delay: 80ms;">
+              <div class="principle-num">02 / Rebuilt</div>
+              <h3>Original DSP, published method.</h3>
+              <p>PolyBLEP oscillators, RBJ biquads, TPT filters, FDN reverberation, look-ahead limiting, STFT analysis, granular overlap-add.</p>
+            </article>
+            <article class="principle" data-reveal style="--delay: 160ms;">
+              <div class="principle-num">03 / Original</div>
+              <h3>Names and visuals of its own.</h3>
+              <p>49 instrument names, 74 effect names, four themes, and a vector visual language created for REDRAW. Nothing traced.</p>
+            </article>
+          </div>
+          <div class="ledger-wrap">
+            <div class="ledger" data-reveal role="group" aria-label="Clean-room receipt">
+              <div class="stamp" aria-hidden="true">Original<br>work</div>
+              <div class="ledger-head" style="padding-right: 74px;">
+                <div>
+                  <h3>Clean-room receipt</h3>
+                  <p>REDRAW 0.16 / post-Phase-16</p>
+                </div>
+              </div>
+              <div class="ledger-row"><span>Decompiled engine lines</span><span>0</span></div>
+              <div class="ledger-row"><span>Bundled samples or presets</span><span>0</span></div>
+              <div class="ledger-row"><span>Third-party DAW assets</span><span>0</span></div>
+              <div class="ledger-row"><span>Legacy labels resolved</span><span>74</span></div>
+              <div class="ledger-row"><span>Release warnings</span><span>0</span></div>
+              <div class="ledger-foot">
+                <span>cargo test --workspace</span>
+                <span>172 passed · 1 ignored by design</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="spec-band" aria-labelledby="spec-title">
+      <div class="container">
+        <div class="spec-head">
+          <span class="spec-title" id="spec-title">Spec sheet / Rev 0.16</span>
+          <span>Measured in voices, ticks, and frames</span>
+        </div>
+        <div class="spec-grid">
+          <div class="spec-cell" data-reveal>
+            <span class="spec-value"><span data-count="49">49</span></span>
+            <span class="spec-label">Instrument engines</span>
+            <span class="spec-note">Eight synthesis families sharing one 64-voice pool.</span>
+          </div>
+          <div class="spec-cell" data-reveal style="--delay: 40ms;">
+            <span class="spec-value"><span data-count="74">74</span></span>
+            <span class="spec-label">Effect processors</span>
+            <span class="spec-note">Eleven original cores, from biquads to 32-band vocoding.</span>
+          </div>
+          <div class="spec-cell" data-reveal style="--delay: 80ms;">
+            <span class="spec-value"><span data-count="64">64</span></span>
+            <span class="spec-label">Shared voices</span>
+            <span class="spec-note">Round-robin allocation with oldest / lowest-velocity stealing.</span>
+          </div>
+          <div class="spec-cell" data-reveal style="--delay: 120ms;">
+            <span class="spec-value"><span data-count="960">960</span><sup>PPQ</sup></span>
+            <span class="spec-label">Transport resolution</span>
+            <span class="spec-note">Sample-accurate scheduling from 10 to 999 BPM.</span>
+          </div>
+          <div class="spec-cell" data-reveal>
+            <span class="spec-value"><span data-count="64">64</span></span>
+            <span class="spec-label">Mixer strips</span>
+            <span class="spec-note">Four send buses and a pinned master with look-ahead limiting.</span>
+          </div>
+          <div class="spec-cell" data-reveal style="--delay: 40ms;">
+            <span class="spec-value"><span data-count="8">8</span></span>
+            <span class="spec-label">Serial inserts</span>
+            <span class="spec-note">Eight effects per channel, plus master inserts and exact bypass.</span>
+          </div>
+          <div class="spec-cell" data-reveal style="--delay: 80ms;">
+            <span class="spec-value"><span data-count="512">512</span><sup>frames</sup></span>
+            <span class="spec-label">Callback block</span>
+            <span class="spec-note">48 kHz stereo float by default. No allocation on the continuous path.</span>
+          </div>
+          <div class="spec-cell" data-reveal style="--delay: 120ms;">
+            <span class="spec-value"><span data-count="0">0</span></span>
+            <span class="spec-label">Borrowed assets</span>
+            <span class="spec-note">No third-party presets, samples, fonts, icons, artwork, or project files.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section rack" id="rack">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="kicker"><span class="dot"></span> 02 / The rack</p>
+            <h2 class="display">A few ways in.</h2>
+          </div>
+          <p class="head-note">Four flagship engines from the 49. Each one is an original implementation, not a preset bank. Play a per-engine sketch in the browser.</p>
+        </div>
+        <div class="rack-grid">
+          <article class="instrument-card span-7" style="--family: #0b7d8c; --trace: #65c8f0;" data-reveal>
+            <div class="card-scope">
+              <span class="scope-corner tl">01 / Wavetable</span>
+              <span class="scope-corner tr">Aurora</span>
+              <span class="scope-corner bl">Two tables / six shapes</span>
+              <span class="card-ghost-num" aria-hidden="true">01</span>
+              <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                <path class="scope-path ghost" data-wave="W" data-seed="1"></path>
+                <path class="scope-path" data-wave="W" data-seed="1"></path>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-topline">
+                <span class="card-index">Instrument 01 / 49</span>
+                <span class="tag" style="--family: #0b7d8c;">Wavetable</span>
+              </div>
+              <h3 class="card-name">Aurora</h3>
+              <p class="card-cap">Wavetable synth</p>
+              <p class="card-desc">Two table oscillators over six generated tables, seven-voice unison, a state-variable filter. A bright surface with a moving center.</p>
+              <div class="card-foot">
+                <button class="audition-btn" type="button" data-audition-family="W" data-audition-name="Aurora" data-audition-id="1">
+                  <span class="eq-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+                  Audition
+                </button>
+                <a class="card-detail-link" href="instruments.html">Open catalog ↗</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="instrument-card span-5" style="--family: #9a6410; --trace: #e4a33b; --delay: 60ms;" data-reveal>
+            <div class="card-scope">
+              <span class="scope-corner tl">02 / FM</span>
+              <span class="scope-corner tr">Hexad FM</span>
+              <span class="scope-corner bl">Six operators / four algorithms</span>
+              <span class="card-ghost-num" aria-hidden="true">02</span>
+              <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                <path class="scope-path ghost" data-wave="F" data-seed="2"></path>
+                <path class="scope-path" data-wave="F" data-seed="2"></path>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-topline">
+                <span class="card-index">Instrument 02 / 49</span>
+                <span class="tag" style="--family: #9a6410;">FM</span>
+              </div>
+              <h3 class="card-name">Hexad FM</h3>
+              <p class="card-cap">Six-operator FM flagship</p>
+              <p class="card-desc">Six operators, four algorithms, feedback, a filter, and two envelopes. Sharp edges, long tails.</p>
+              <div class="card-foot">
+                <button class="audition-btn" type="button" data-audition-family="F" data-audition-name="Hexad FM" data-audition-id="2">
+                  <span class="eq-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+                  Audition
+                </button>
+                <a class="card-detail-link" href="instruments.html">Open catalog ↗</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="instrument-card span-5" style="--family: #7b4b95; --trace: #c49ae0;" data-reveal>
+            <div class="card-scope">
+              <span class="scope-corner tl">04 / Additive</span>
+              <span class="scope-corner tr">Prism</span>
+              <span class="scope-corner bl">16 partials / five formants</span>
+              <span class="card-ghost-num" aria-hidden="true">04</span>
+              <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                <path class="scope-path ghost" data-wave="A" data-seed="4"></path>
+                <path class="scope-path" data-wave="A" data-seed="4"></path>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-topline">
+                <span class="card-index">Instrument 04 / 49</span>
+                <span class="tag" style="--family: #7b4b95;">Additive</span>
+              </div>
+              <h3 class="card-name">Prism</h3>
+              <p class="card-cap">Additive harmonic flagship</p>
+              <p class="card-desc">Sixteen partials, five vowel formants, prism drift, blur, and vibrato. Light bent into harmonics.</p>
+              <div class="card-foot">
+                <button class="audition-btn" type="button" data-audition-family="A" data-audition-name="Prism" data-audition-id="4">
+                  <span class="eq-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+                  Audition
+                </button>
+                <a class="card-detail-link" href="instruments.html">Open catalog ↗</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="instrument-card span-7" style="--family: #4f6a30; --trace: #a9d17a; --delay: 60ms;" data-reveal>
+            <div class="card-scope">
+              <span class="scope-corner tl">15 / Physical</span>
+              <span class="scope-corner tr">Petal</span>
+              <span class="scope-corner bl">Two damped strings / pick excitation</span>
+              <span class="card-ghost-num" aria-hidden="true">15</span>
+              <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                <path class="scope-path ghost" data-wave="P" data-seed="15"></path>
+                <path class="scope-path" data-wave="P" data-seed="15"></path>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-topline">
+                <span class="card-index">Instrument 15 / 49</span>
+                <span class="tag" style="--family: #4f6a30;">Physical</span>
+              </div>
+              <h3 class="card-name">Petal</h3>
+              <p class="card-cap">Plucked-string physical model</p>
+              <p class="card-desc">Two detuned damped strings, pick excitation, body tone, and a sub oscillator. A plucked model that breathes.</p>
+              <div class="card-foot">
+                <button class="audition-btn" type="button" data-audition-family="P" data-audition-name="Petal" data-audition-id="15">
+                  <span class="eq-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+                  Audition
+                </button>
+                <a class="card-detail-link" href="instruments.html">Open catalog ↗</a>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div style="margin-top: 28px;">
+          <a class="link-arrow" href="instruments.html">All 49 instruments</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section workflow" id="workflow">
+      <div class="container">
+        <div class="workflow-grid">
+          <div>
+            <div class="workflow-intro">
+              <p class="kicker"><span class="dot"></span> 03 / The workflow</p>
+              <h2 class="display">From first step to final render.</h2>
+            </div>
+            <div class="tabs" role="tablist" aria-label="REDRAW workflow" aria-orientation="vertical">
+              <button class="tab" id="tab-step" type="button" role="tab" aria-selected="true" aria-controls="panel-step" tabindex="0">
+                <span class="tab-num">01</span>
+                <span>
+                  <span class="tab-title">Step</span>
+                  <span class="tab-desc">A 16-step grid per channel. Toggle, velocity, signed nudges, swing on odd sixteenths, configurable gate.</span>
+                </span>
+              </button>
+              <button class="tab" id="tab-shape" type="button" role="tab" aria-selected="false" aria-controls="panel-shape" tabindex="-1">
+                <span class="tab-num">02</span>
+                <span>
+                  <span class="tab-title">Shape</span>
+                  <span class="tab-desc">A full piano roll: draw, split, merge, resize, quantize, humanize, legato, chords, scales, arpeggio, CC lane, ghost notes.</span>
+                </span>
+              </button>
+              <button class="tab" id="tab-mix" type="button" role="tab" aria-selected="false" aria-controls="panel-mix" tabindex="-1">
+                <span class="tab-num">03</span>
+                <span>
+                  <span class="tab-title">Mix</span>
+                  <span class="tab-desc">64 strips, four send buses, a pinned master, eight serial inserts per channel, post-insert peak meters.</span>
+                </span>
+              </button>
+              <button class="tab" id="tab-render" type="button" role="tab" aria-selected="false" aria-controls="panel-render" tabindex="-1">
+                <span class="tab-num">04</span>
+                <span>
+                  <span class="tab-title">Render</span>
+                  <span class="tab-desc">Song or pattern scope, automation included, a two-second tail, native WAV/AIFF, and ffmpeg formats.</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tab-panels">
+            <div class="tab-panel" id="panel-step" role="tabpanel" aria-labelledby="tab-step">
+              <div class="mock" aria-hidden="true">
+                <div class="mock-chrome">
+                  <div class="mock-chrome-left">
+                    <span class="mock-logo">REDRAW</span>
+                    <span class="mock-menus"><span>File</span><span>Edit</span><span>Pattern</span><span>View</span><span>Options</span></span>
+                  </div>
+                  <div class="mock-chrome-right"><span>48 kHz</span><span><strong>112.00</strong> BPM</span><span>4/4</span></div>
+                </div>
+                <div class="mock-body mock-step">
+                  <div class="mock-side">
+                    <div class="mock-side-title">Browser</div>
+                    <div class="mock-side-item active">Pattern 01 <span class="tiny">16</span></div>
+                    <div class="mock-side-item">Pattern 02 <span class="tiny">16</span></div>
+                    <div class="mock-side-item">Pattern 03 <span class="tiny">16</span></div>
+                    <div class="mock-side-title">Channels</div>
+                    <div class="mock-side-item active">Kick <span class="tiny">01</span></div>
+                    <div class="mock-side-item">Bass <span class="tiny">02</span></div>
+                    <div class="mock-side-item">Keys <span class="tiny">03</span></div>
+                    <div class="mock-side-item">Hats <span class="tiny">04</span></div>
+                    <div class="mock-side-item">Clap <span class="tiny">05</span></div>
+                  </div>
+                  <div class="mock-main">
+                    <div class="mock-toolbar">
+                      <span class="tool-strong">Pattern 01 · A minor</span>
+                      <span class="tool-group"><span class="tool-chip active">Step</span><span class="tool-chip">Swing 8%</span><span class="tool-chip">Gate 75%</span></span>
+                    </div>
+                    <div class="mock-step-area">
+                      <span class="mock-playhead"></span>
+                      <div class="mock-step-row" style="--cell: #f09a4b;">
+                        <span class="mock-step-label"><i></i>Kick</span>
+                        <div class="mock-cells">
+                          <span class="mock-cell beat on"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                        </div>
+                      </div>
+                      <div class="mock-step-row" style="--cell: #65c8f0;">
+                        <span class="mock-step-label"><i style="--dot: #65c8f0;"></i>Bass</span>
+                        <div class="mock-cells">
+                          <span class="mock-cell beat on soft"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell on"></span>
+                          <span class="mock-cell beat"></span><span class="mock-cell"></span><span class="mock-cell on soft"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on"></span><span class="mock-cell"></span><span class="mock-cell on soft"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat"></span><span class="mock-cell"></span><span class="mock-cell on"></span><span class="mock-cell"></span>
+                        </div>
+                      </div>
+                      <div class="mock-step-row" style="--cell: #d9e4f2;">
+                        <span class="mock-step-label"><i style="--dot: #d9e4f2;"></i>Keys</span>
+                        <div class="mock-cells">
+                          <span class="mock-cell beat on soft"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat"></span><span class="mock-cell"></span><span class="mock-cell on soft"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat"></span><span class="mock-cell"></span><span class="mock-cell on"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat"></span><span class="mock-cell"></span><span class="mock-cell on soft"></span><span class="mock-cell"></span>
+                        </div>
+                      </div>
+                      <div class="mock-step-row" style="--cell: #72d284;">
+                        <span class="mock-step-label"><i style="--dot: #72d284;"></i>Hats</span>
+                        <div class="mock-cells">
+                          <span class="mock-cell beat on soft"></span><span class="mock-cell"></span><span class="mock-cell on"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on soft"></span><span class="mock-cell"></span><span class="mock-cell on"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on soft"></span><span class="mock-cell"></span><span class="mock-cell on"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on soft"></span><span class="mock-cell"></span><span class="mock-cell on"></span><span class="mock-cell"></span>
+                        </div>
+                      </div>
+                      <div class="mock-step-row" style="--cell: #f06a6a;">
+                        <span class="mock-step-label"><i style="--dot: #f06a6a;"></i>Clap</span>
+                        <div class="mock-cells">
+                          <span class="mock-cell beat"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                          <span class="mock-cell beat on"></span><span class="mock-cell"></span><span class="mock-cell"></span><span class="mock-cell"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mock-mini-mix">
+                      <div class="mock-mini-strip"><div class="mock-mini-meter"><i style="--h: 72%;"></i><i style="--h: 64%;"></i></div><span>Kick</span></div>
+                      <div class="mock-mini-strip"><div class="mock-mini-meter"><i style="--h: 46%;"></i><i style="--h: 40%;"></i></div><span>Bass</span></div>
+                      <div class="mock-mini-strip"><div class="mock-mini-meter"><i style="--h: 58%;"></i><i style="--h: 52%;"></i></div><span>Keys</span></div>
+                      <div class="mock-mini-strip"><div class="mock-mini-meter"><i style="--h: 35%;"></i><i style="--h: 30%;"></i></div><span>Hats</span></div>
+                      <div class="mock-mini-strip"><div class="mock-mini-meter"><i style="--h: 48%;"></i><i style="--h: 42%;"></i></div><span>Clap</span></div>
+                      <div class="mock-mini-strip"><div class="mock-mini-meter"><i style="--h: 62%;"></i><i style="--h: 58%;"></i></div><span>Send A</span></div>
+                      <div class="mock-mini-strip"><div class="mock-mini-meter"><i style="--h: 70%;"></i><i style="--h: 66%;"></i></div><span>Master</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="sr-only">A stylized step sequencer showing five channels, a 16-step grid, swing, gate, and a compact mixer.</p>
+            </div>
+
+            <div class="tab-panel" id="panel-shape" role="tabpanel" aria-labelledby="tab-shape" hidden>
+              <div class="mock" aria-hidden="true">
+                <div class="mock-chrome">
+                  <div class="mock-chrome-left">
+                    <span class="mock-logo">REDRAW</span>
+                    <span class="mock-menus"><span>File</span><span>Edit</span><span>Pattern</span><span>View</span><span>Options</span></span>
+                  </div>
+                  <div class="mock-chrome-right"><span>Piano roll</span><span><strong>960</strong> PPQ</span><span>A minor</span></div>
+                </div>
+                <div class="mock-body mock-shape">
+                  <div class="mock-toolbar">
+                    <span class="tool-strong">Pattern 01 · Keys</span>
+                    <span class="tool-group"><span class="tool-chip active">Draw</span><span class="tool-chip">Select</span><span class="tool-chip">Split</span><span class="tool-chip">Quantize</span><span class="tool-chip">Legato</span></span>
+                  </div>
+                  <div class="mock-roll">
+                    <div class="mock-keys">
+                      <span class="mock-key">C5</span><span class="mock-key black">B4</span><span class="mock-key">A4</span><span class="mock-key black">G4</span><span class="mock-key">F4</span><span class="mock-key">E4</span><span class="mock-key black">D4</span><span class="mock-key">C4</span><span class="mock-key black">B3</span><span class="mock-key">A3</span><span class="mock-key black">G3</span><span class="mock-key">F3</span>
+                    </div>
+                    <div class="mock-roll-grid">
+                      <span class="mock-note" style="left: 0%; width: 18%; top: 0.4%;"></span>
+                      <span class="mock-note" style="left: 18%; width: 12%; top: 8.7%;"></span>
+                      <span class="mock-note orange" style="left: 32%; width: 20%; top: 17%;"></span>
+                      <span class="mock-note" style="left: 55%; width: 14%; top: 8.7%;"></span>
+                      <span class="mock-note" style="left: 70%; width: 25%; top: 25.3%;"></span>
+                      <span class="mock-note orange" style="left: 0%; width: 30%; top: 42%;"></span>
+                      <span class="mock-note" style="left: 35%; width: 12%; top: 50.3%;"></span>
+                      <span class="mock-note" style="left: 50%; width: 20%; top: 58.7%;"></span>
+                      <span class="mock-note ghost" style="left: 75%; width: 20%; top: 42%;"></span>
+                      <span class="mock-note" style="left: 12%; width: 14%; top: 67%;"></span>
+                      <span class="mock-note orange" style="left: 62%; width: 18%; top: 75.3%;"></span>
+                      <span class="mock-note ghost" style="left: 0%; width: 12%; top: 25.3%;"></span>
+                    </div>
+                  </div>
+                  <div class="mock-velocity">
+                    <i style="--h: 42%;"></i><i style="--h: 68%;"></i><i style="--h: 30%;"></i><i style="--h: 55%;"></i>
+                    <i style="--h: 78%;"></i><i style="--h: 46%;"></i><i style="--h: 62%;"></i><i style="--h: 34%;"></i>
+                    <i style="--h: 88%;"></i><i style="--h: 52%;"></i><i style="--h: 70%;"></i><i style="--h: 38%;"></i>
+                    <i style="--h: 58%;"></i><i style="--h: 82%;"></i><i style="--h: 44%;"></i><i style="--h: 66%;"></i>
+                  </div>
+                  <div class="mock-inspector"><span>Note <strong>A4</strong></span><span>Velocity <strong>0.82</strong></span><span>Pan <strong>C</strong></span><span>Length <strong>1.1.00</strong></span><span>Snap <strong>1/16</strong></span><span>Scale <strong>A minor</strong></span></div>
+                </div>
+              </div>
+              <p class="sr-only">A stylized piano roll with note blocks, a velocity lane, and an inspector showing note, velocity, pan, length, snap, and scale.</p>
+            </div>
+
+            <div class="tab-panel" id="panel-mix" role="tabpanel" aria-labelledby="tab-mix" hidden>
+              <div class="mock" aria-hidden="true">
+                <div class="mock-chrome">
+                  <div class="mock-chrome-left">
+                    <span class="mock-logo">REDRAW</span>
+                    <span class="mock-menus"><span>File</span><span>Edit</span><span>Pattern</span><span>View</span><span>Options</span></span>
+                  </div>
+                  <div class="mock-chrome-right"><span>Mixer</span><span><strong>64</strong> strips</span><span>48 kHz</span></div>
+                </div>
+                <div class="mock-body mock-mix">
+                  <div class="mock-mix-head"><span>Mixer / four sends + pinned master</span><span>Post-insert / pre-master metering</span></div>
+                  <div class="mock-strips">
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">Kick</span>
+                      <span class="mock-pan" style="--pan: 0deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 64%;"></div><div class="mock-meter"><i style="--h: 72%;"></i><i style="--h: 66%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span class="on">S</span></div>
+                    </div>
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">Bass</span>
+                      <span class="mock-pan" style="--pan: -8deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 58%;"></div><div class="mock-meter"><i style="--h: 58%;"></i><i style="--h: 52%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span>S</span></div>
+                    </div>
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">Keys</span>
+                      <span class="mock-pan" style="--pan: 14deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 48%;"></div><div class="mock-meter"><i style="--h: 46%;"></i><i style="--h: 44%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span>S</span></div>
+                    </div>
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">Hats</span>
+                      <span class="mock-pan" style="--pan: -18deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 44%;"></div><div class="mock-meter"><i style="--h: 38%;"></i><i style="--h: 34%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span>S</span></div>
+                    </div>
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">Clap</span>
+                      <span class="mock-pan" style="--pan: 6deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 52%;"></div><div class="mock-meter"><i style="--h: 48%;"></i><i style="--h: 42%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span>S</span></div>
+                    </div>
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">Pad</span>
+                      <span class="mock-pan" style="--pan: 24deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 38%;"></div><div class="mock-meter"><i style="--h: 32%;"></i><i style="--h: 30%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span>S</span></div>
+                    </div>
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">Lead</span>
+                      <span class="mock-pan" style="--pan: -22deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 55%;"></div><div class="mock-meter"><i style="--h: 54%;"></i><i style="--h: 50%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span>S</span></div>
+                    </div>
+                    <div class="mock-strip">
+                      <span class="mock-strip-name">FX</span>
+                      <span class="mock-pan" style="--pan: 0deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 32%;"></div><div class="mock-meter"><i style="--h: 28%;"></i><i style="--h: 26%;"></i></div></div>
+                      <div class="mock-strip-btns"><span>M</span><span>S</span></div>
+                    </div>
+                    <div class="mock-strip master">
+                      <span class="mock-strip-name">Master</span>
+                      <span class="mock-pan" style="--pan: 0deg;"></span>
+                      <div class="mock-strip-body"><div class="mock-fader" style="--fader: 60%;"></div><div class="mock-meter"><i style="--h: 68%;"></i><i style="--h: 64%;"></i></div></div>
+                      <div class="mock-strip-btns"><span class="on">M</span><span class="on">S</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="sr-only">A stylized mixer with eight channel strips and a pinned master, faders, pan controls, and stereo meters.</p>
+            </div>
+
+            <div class="tab-panel" id="panel-render" role="tabpanel" aria-labelledby="tab-render" hidden>
+              <div class="mock" aria-hidden="true">
+                <div class="mock-chrome">
+                  <div class="mock-chrome-left">
+                    <span class="mock-logo">REDRAW</span>
+                    <span class="mock-menus"><span>File</span><span>Edit</span><span>Pattern</span><span>View</span><span>Options</span></span>
+                  </div>
+                  <div class="mock-chrome-right"><span>Export audio</span><span><strong>WAV</strong> 24-bit</span><span>48 kHz</span></div>
+                </div>
+                <div class="mock-body mock-render">
+                  <div class="render-dialog">
+                    <div class="render-head"><span><strong>Export audio</strong></span><span>Song · 00:00:24</span></div>
+                    <div class="render-body">
+                      <div class="render-row"><span>Scope</span><span>Song · tick 0 to arrangement end</span></div>
+                      <div class="render-row"><span>Format</span><span>WAV · 24-bit PCM</span></div>
+                      <div class="render-row"><span>Sample rate</span><span>48,000 Hz · stereo</span></div>
+                      <div class="render-row"><span>Release tail</span><span>2.0 s</span></div>
+                      <div class="render-progress"><i></i></div>
+                      <div class="render-wave">
+                        <i style="--h: 24%;"></i><i style="--h: 48%;"></i><i style="--h: 72%;"></i><i style="--h: 36%;"></i>
+                        <i style="--h: 58%;"></i><i style="--h: 82%;"></i><i style="--h: 44%;"></i><i style="--h: 64%;"></i>
+                        <i style="--h: 28%;"></i><i style="--h: 52%;"></i><i style="--h: 76%;"></i><i style="--h: 40%;"></i>
+                        <i style="--h: 62%;"></i><i style="--h: 88%;"></i><i style="--h: 50%;"></i><i style="--h: 70%;"></i>
+                        <i style="--h: 34%;"></i><i style="--h: 56%;"></i><i style="--h: 80%;"></i><i style="--h: 46%;"></i>
+                        <i style="--h: 66%;"></i><i style="--h: 92%;"></i><i style="--h: 54%;"></i><i style="--h: 74%;"></i>
+                        <i style="--h: 38%;"></i><i style="--h: 60%;"></i><i style="--h: 84%;"></i><i style="--h: 42%;"></i>
+                        <i style="--h: 68%;"></i><i style="--h: 96%;"></i><i style="--h: 58%;"></i><i style="--h: 78%;"></i>
+                      </div>
+                      <div class="render-actions"><span class="mock-render-btn">Rendering…</span><span class="render-stat">2 of 4 bars · atomic output</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="sr-only">A stylized export dialog showing song scope, WAV 24-bit format, 48 kHz stereo, a two-second tail, a progress bar, and a waveform preview.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="engine-teaser" id="engine">
+      <div class="container teaser-grid">
+        <div class="teaser-copy">
+          <p class="kicker"><span class="dot"></span> 04 / The engine</p>
+          <h2 class="display">The continuous path allocates nothing. Locks nothing. <em>No excuses.</em></h2>
+          <p class="lede">A lock-free command ring carries edits from the UI. Structural changes are built off-thread and swapped at block boundaries. The callback renders 512 frames at a time, then hands the displaced graph back through a garbage ring for the control thread to drop.</p>
+          <div class="teaser-stats">
+            <div class="teaser-stat"><strong>4096</strong><span>Command slots</span></div>
+            <div class="teaser-stat"><strong>512</strong><span>Garbage slots</span></div>
+            <div class="teaser-stat"><strong>64</strong><span>Shared voices</span></div>
+            <div class="teaser-stat"><strong>8</strong><span>Serial inserts</span></div>
+          </div>
+          <div class="teaser-actions">
+            <a class="btn btn-primary" href="engine.html">Open the engine notes</a>
+            <a class="btn" href="engine.html#provenance">Provenance</a>
+          </div>
+        </div>
+        <div class="block-viz" aria-hidden="true">
+          <div class="block-viz-head"><span>Callback / block</span><strong>512 frames</strong></div>
+          <div class="block-bars">
+            <span class="block-bar" style="--h: 18%;"></span><span class="block-bar" style="--h: 34%;"></span><span class="block-bar" style="--h: 26%;"></span><span class="block-bar" style="--h: 48%;"></span>
+            <span class="block-bar" style="--h: 38%;"></span><span class="block-bar" style="--h: 62%;"></span><span class="block-bar" style="--h: 52%;"></span><span class="block-bar" style="--h: 74%;"></span>
+            <span class="block-bar" style="--h: 42%;"></span><span class="block-bar" style="--h: 58%;"></span><span class="block-bar" style="--h: 68%;"></span><span class="block-bar" style="--h: 46%;"></span>
+            <span class="block-bar" style="--h: 82%;"></span><span class="block-bar hot" style="--h: 96%;"></span><span class="block-bar" style="--h: 64%;"></span><span class="block-bar" style="--h: 54%;"></span>
+            <span class="block-bar" style="--h: 36%;"></span><span class="block-bar" style="--h: 50%;"></span><span class="block-bar" style="--h: 72%;"></span><span class="block-bar" style="--h: 44%;"></span>
+            <span class="block-bar" style="--h: 66%;"></span><span class="block-bar" style="--h: 84%;"></span><span class="block-bar" style="--h: 56%;"></span><span class="block-bar" style="--h: 40%;"></span>
+            <span class="block-bar" style="--h: 28%;"></span><span class="block-bar" style="--h: 60%;"></span><span class="block-bar" style="--h: 78%;"></span><span class="block-bar" style="--h: 48%;"></span>
+            <span class="block-bar" style="--h: 70%;"></span><span class="block-bar" style="--h: 52%;"></span><span class="block-bar" style="--h: 32%;"></span><span class="block-bar" style="--h: 44%;"></span>
+            <span class="block-bar" style="--h: 64%;"></span><span class="block-bar" style="--h: 88%;"></span><span class="block-bar" style="--h: 58%;"></span><span class="block-bar" style="--h: 42%;"></span>
+            <span class="block-bar" style="--h: 24%;"></span><span class="block-bar" style="--h: 46%;"></span><span class="block-bar" style="--h: 68%;"></span><span class="block-bar" style="--h: 54%;"></span>
+            <span class="block-bar" style="--h: 76%;"></span><span class="block-bar" style="--h: 62%;"></span><span class="block-bar" style="--h: 38%;"></span><span class="block-bar" style="--h: 50%;"></span>
+            <span class="block-bar" style="--h: 72%;"></span><span class="block-bar" style="--h: 90%;"></span><span class="block-bar" style="--h: 60%;"></span><span class="block-bar" style="--h: 44%;"></span>
+          </div>
+          <div class="block-axis"><span>0</span><span>256</span><span>512</span></div>
+          <p class="block-note"><strong>48 kHz stereo f32.</strong> 93.75 blocks per second. Structural edits are built on the control thread and swapped at block boundaries.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing-cta">
+      <svg class="cta-wave" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 214 C90 214 104 168 168 168 S246 226 318 204 S414 116 492 132 S588 236 664 216 S754 96 838 124 S936 238 1014 210 S1116 88 1192 120 S1308 220 1440 176"></path>
+        <path d="M0 244 C110 244 130 206 192 206 S276 254 348 238 S452 166 528 182 S620 258 704 244 S802 148 884 172 S980 258 1062 238 S1168 138 1248 162 S1352 236 1440 208"></path>
+      </svg>
+      <div class="container cta-inner">
+        <div>
+          <h2 class="display">Hear what we <em>drew.</em></h2>
+          <p class="cta-copy">A complete instrument, drawn from first principles. Start with a pattern, shape it in the piano roll, give it a room, then commit it to a file.</p>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn-dark" href="#console">Play the console <span aria-hidden="true">↗</span></a>
+          <a class="btn" href="instruments.html">Browse the rack <span aria-hidden="true">→</span></a>
+          <p class="cta-note">No samples. No autoplay. Just click.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" style="color: var(--paper);">
+              <rect x="1" y="1" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M6 21h5l3-9 4 17 4-13 3 8 9-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="6" cy="21" r="1.7" fill="#ef4e22"/>
+            </svg>
+            <span class="brand-type">
+              <span class="brand-word">REDRAW</span>
+              <span class="brand-sub">Clean-room audio workstation</span>
+            </span>
+          </a>
+          <p class="footer-note">A pattern-based digital audio workstation built from first principles in Rust. Original engines, original processors, original names.</p>
+        </div>
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <ul>
+            <li><a href="instruments.html">49 instruments</a></li>
+            <li><a href="effects.html">74 effects</a></li>
+            <li><a href="engine.html">Engine notes</a></li>
+            <li><a href="index.html#console">Live console</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Inside</h3>
+          <ul>
+            <li><a href="engine.html#signal-path">Signal path</a></li>
+            <li><a href="engine.html#formats">Project format</a></li>
+            <li><a href="engine.html#export-lab">Export lab</a></li>
+            <li><a href="engine.html#provenance">Provenance</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-word" aria-hidden="true">REDRAW</div>
+      <div class="footer-bottom">
+        <p class="footer-legal">© 2026 REDRAW. Original clean-room work. No third-party DAW code, presets, samples, fonts, icons, artwork, or project files are included. Browser demos are illustrative; the application is a native Rust build.</p>
+        <p>Set in Archivo &amp; IBM Plex Mono · <a href="assets/fonts/OFL-Archivo.txt">OFL</a> / <a href="assets/fonts/OFL-IBMPlexMono.txt">OFL</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <dialog class="menu-dialog" id="site-menu" aria-label="Site menu">
+    <div class="menu-dialog-inner">
+      <div class="menu-dialog-head">
+        <span class="brand-word">REDRAW</span>
+        <button class="icon-btn" id="menu-close" type="button" aria-label="Close menu">×</button>
+      </div>
+      <nav class="menu-links" aria-label="Mobile">
+        <a href="index.html">Overview <span>00</span></a>
+        <a href="instruments.html">Instruments <span>49</span></a>
+        <a href="effects.html">Effects <span>74</span></a>
+        <a href="engine.html">Engine <span>05</span></a>
+      </nav>
+      <a class="btn btn-primary" href="#console">Open the console</a>
+      <p class="console-note">A browser sketch of the real engine. Audio starts only when you ask.</p>
+    </div>
+  </dialog>
+
+  <div class="sr-only" id="sr-status" aria-live="polite"></div>
+
+  <script src="assets/data.js" defer></script>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>

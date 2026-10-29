@@ -1,0 +1,53 @@
+# Rust
+/target/
+**/target/
+*.rs.bk
+
+# Raw binary-analysis artifacts (derived from Image-Line binaries — never shipped)
+/spec/raw/
+
+# Reference screenshots (visual reference only — never shipped)
+/assets/reference/
+
+# Downloaded/binary vendored deps
+/vendor/
+
+# Runtime user data (user-generated at runtime, not shipped)
+/user-data/
+autosave/
+
+# NEVER ship Image-Line asset types anywhere in this repo
+*.dll
+*.exe
+*.wav
+*.fls
+*.flp
+*.flm
+*.fst
+*.fxb
+*.aiff
+*.mp3
+*.ogg
+*.flac
+*.mp4
+*.mov
+*.avi
+*.fxp
+*.syp
+*.harm
+*.png
+*.psd
+*.tga
+*.flexpack
+*.flex2pack
+*.ilcontrol
+*.zla
+*.sf2
+*.ttf
+*.otf
+*.ico
+*.ilfont
+
+# OS noise
+Thumbs.db
+.DS_Store

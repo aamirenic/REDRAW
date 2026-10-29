@@ -1,0 +1,16 @@
+[package]
+name = "redraw-fileio"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+serde.workspace = true
+serde_json.workspace = true
+bincode.workspace = true
+flate2.workspace = true
+crc32fast.workspace = true
+
+[lib]
+name = "redraw_fileio"

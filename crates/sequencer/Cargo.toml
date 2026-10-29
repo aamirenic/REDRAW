@@ -1,0 +1,11 @@
+[package]
+name = "redraw-sequencer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+
+[lib]
+name = "redraw_sequencer"

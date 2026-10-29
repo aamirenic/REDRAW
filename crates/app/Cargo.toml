@@ -1,0 +1,26 @@
+﻿[package]
+name = "redraw"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "redraw"
+path = "src/main.rs"
+
+[lib]
+name = "redraw_app"
+path = "src/lib.rs"
+
+[dependencies]
+eframe = { version = "0.31.1", default-features = false, features = ["glow", "default_fonts"] }
+rfd = { version = "0.15.4", default-features = false }
+redraw-shared = { path = "../shared" }
+redraw-audio-engine = { path = "../audio-engine" }
+redraw-arrangement = { path = "../arrangement" }
+redraw-automation = { path = "../automation" }
+redraw-fileio = { path = "../fileio" }
+redraw-export = { path = "../export" }
+redraw-plugins = { path = "../plugins" }
+redraw-piano-roll = { path = "../piano-roll" }
+redraw-vst = { path = "../vst" }

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Engine — REDRAW</title>
+  <meta name="description" content="Inside the REDRAW engine: a 512-frame realtime callback, lock-free command ring, 960-PPQ transport, two-entry project container, and a browser WAV export lab.">
+  <meta name="theme-color" content="#f2eee3">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/archivo-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script>document.documentElement.classList.add('js');</script>
+</head>
+<body data-page="engine">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="1" y="1" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M6 21h5l3-9 4 17 4-13 3 8 9-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="6" cy="21" r="1.7" fill="#ef4e22"/>
+        </svg>
+        <span class="brand-type">
+          <span class="brand-word">REDRAW</span>
+          <span class="brand-sub">Clean-room audio workstation</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-link" href="index.html">Overview</a>
+        <a class="nav-link" href="instruments.html">Instruments</a>
+        <a class="nav-link" href="effects.html">Effects</a>
+        <a class="nav-link" href="engine.html" aria-current="page">Engine</a>
+      </nav>
+      <div class="header-tools">
+        <span class="header-status"><span class="status-dot"></span> Engine ready</span>
+        <a class="btn btn-sm btn-primary header-cta" href="index.html#console">Live console</a>
+        <button class="menu-btn" id="menu-open" type="button" aria-label="Open menu" aria-controls="site-menu" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <noscript>
+    <div class="noscript-banner">
+      <div class="container"><strong>JavaScript is off.</strong> The live console, interactive catalog tools, and audio labs need it. The written notes and format tables are still readable.</div>
+    </div>
+    <nav class="nojs-nav" aria-label="Primary">
+      <div class="container">
+        <a href="index.html">Overview</a>
+        <a href="instruments.html">Instruments</a>
+        <a href="effects.html">Effects</a>
+        <a href="engine.html" aria-current="page">Engine</a>
+      </div>
+    </nav>
+  </noscript>
+
+  <main id="main">
+    <section class="engine-hero">
+      <div class="container engine-hero-grid">
+        <div>
+          <p class="kicker"><span class="dot"></span> Engine / realtime path</p>
+          <h1 class="display">Keep the <em>thread</em> quiet.</h1>
+          <p class="lede">A 512-frame callback with no allocation, no locks, and no syscalls. Edits travel through a bounded lock-free ring. The audio thread only renders.</p>
+          <div class="engine-hero-stats">
+            <div class="engine-hero-stat"><strong>48 kHz</strong><span>Default stereo f32</span></div>
+            <div class="engine-hero-stat"><strong>512</strong><span>Frames per callback</span></div>
+            <div class="engine-hero-stat"><strong>64</strong><span>Shared voices</span></div>
+            <div class="engine-hero-stat"><strong>0</strong><span>Allocations on path</span></div>
+          </div>
+        </div>
+
+        <div class="tone-panel" id="tone-panel" role="group" aria-label="Interactive test tone scope">
+          <div class="tone-head">
+            <span><strong>Test tone</strong> / master bus</span>
+            <span class="tone-live" id="tone-live">Idle</span>
+          </div>
+          <div class="tone-scope">
+            <canvas id="tone-scope" aria-hidden="true"></canvas>
+            <span class="scope-label tl"><span class="tiny-dot"></span>Scope / pre-device</span>
+            <span class="scope-label tr">48 kHz</span>
+            <span class="scope-label bl">WebAudio sketch</span>
+            <span class="scope-label br">512-frame block</span>
+          </div>
+          <div class="tone-controls">
+            <div class="tone-row">
+              <label for="tone-wave">Wave</label>
+              <select class="tone-select" id="tone-wave">
+                <option value="sine">Sine</option>
+                <option value="triangle">Triangle</option>
+                <option value="sawtooth" selected>Saw</option>
+                <option value="square">Square</option>
+              </select>
+            </div>
+            <div class="tone-row">
+              <label for="tone-freq">Pitch</label>
+              <input class="range" type="range" id="tone-freq" min="55" max="880" step="1" value="220">
+              <output id="tone-freq-out" for="tone-freq">220 Hz</output>
+            </div>
+            <div class="tone-row">
+              <label for="tone-gain">Level</label>
+              <input class="range" type="range" id="tone-gain" min="-48" max="-6" step="1" value="-18">
+              <output id="tone-gain-out" for="tone-gain">-18 dB</output>
+            </div>
+            <div class="tone-actions">
+              <button class="btn" id="tone-toggle" type="button" aria-pressed="false">Play test tone</button>
+              <span class="tone-status" id="tone-status">Audio starts on click</span>
+            </div>
+            <p class="tone-disclaimer">A browser oscillator and analyser, not the Rust engine. It is here to make the signal visible. Output is level-limited before it reaches your device.</p>
+            <noscript><p class="noscript-note">The test tone needs JavaScript and Web Audio. The engine notes on this page are static.</p></noscript>
+          </div>
+        </div>
+      </div>
+
+      <div class="container engine-spec-strip" role="group" aria-label="Engine specifications">
+        <div class="engine-spec"><strong>4096</strong><span>Command ring slots</span></div>
+        <div class="engine-spec"><strong>512</strong><span>Garbage ring slots</span></div>
+        <div class="engine-spec"><strong>960</strong><span>PPQ transport</span></div>
+        <div class="engine-spec"><strong>8</strong><span>Serial inserts</span></div>
+        <div class="engine-spec"><strong>10</strong><span>Rotating snapshots</span></div>
+        <div class="engine-spec"><strong>5 min</strong><span>Autosave interval</span></div>
+      </div>
+    </section>
+
+    <div class="engine-main">
+      <section class="engine-section" id="signal-path">
+        <div class="container">
+          <p class="section-label"><span class="num">01</span> Signal path</p>
+          <h2 class="display">One block at a <em>time.</em></h2>
+          <p class="section-lede">Every stage below runs inside the same 512-frame block. Click a stage to read what it owns, what it does not, and where the control thread hands work over.</p>
+
+          <div class="flow-panel">
+            <div class="flow-track" role="group" aria-label="Audio signal path stages">
+              <button class="flow-node is-active" type="button" data-flow="0" aria-pressed="true">
+                <span class="flow-num">01</span>
+                <span class="flow-title">Voice pool</span>
+                <span class="flow-sub">64 shared voices</span>
+              </button>
+              <button class="flow-node" type="button" data-flow="1" aria-pressed="false">
+                <span class="flow-num">02</span>
+                <span class="flow-title">Channel inserts</span>
+                <span class="flow-sub">8 serial each</span>
+              </button>
+              <button class="flow-node" type="button" data-flow="2" aria-pressed="false">
+                <span class="flow-num">03</span>
+                <span class="flow-title">Send buses</span>
+                <span class="flow-sub">4 shared buses</span>
+              </button>
+              <button class="flow-node" type="button" data-flow="3" aria-pressed="false">
+                <span class="flow-num">04</span>
+                <span class="flow-title">Strip sum</span>
+                <span class="flow-sub">64 strips + returns</span>
+              </button>
+              <button class="flow-node" type="button" data-flow="4" aria-pressed="false">
+                <span class="flow-num">05</span>
+                <span class="flow-title">Master inserts</span>
+                <span class="flow-sub">8 serial slots</span>
+              </button>
+              <button class="flow-node" type="button" data-flow="5" aria-pressed="false">
+                <span class="flow-num">06</span>
+                <span class="flow-title">Limiter</span>
+                <span class="flow-sub">Look-ahead ceiling</span>
+              </button>
+              <button class="flow-node" type="button" data-flow="6" aria-pressed="false">
+                <span class="flow-num">07</span>
+                <span class="flow-title">Meter</span>
+                <span class="flow-sub">Post-insert peak</span>
+              </button>
+              <button class="flow-node" type="button" data-flow="7" aria-pressed="false">
+                <span class="flow-num">08</span>
+                <span class="flow-title">Device out</span>
+                <span class="flow-sub">Stereo f32</span>
+              </button>
+            </div>
+
+            <div class="flow-branch">
+              <span class="flow-branch-label">Control path / off the audio thread</span>
+              <div class="flow-node">
+                <span class="flow-num">C1</span>
+                <span class="flow-title">Control thread</span>
+                <span class="flow-sub">Builds structure</span>
+              </div>
+              <div class="flow-node">
+                <span class="flow-num">C2</span>
+                <span class="flow-title">Command ring</span>
+                <span class="flow-sub">4096 bounded slots</span>
+              </div>
+              <div class="flow-node">
+                <span class="flow-num">C3</span>
+                <span class="flow-title">Block swap</span>
+                <span class="flow-sub">Displaced graph returns</span>
+              </div>
+            </div>
+
+            <div class="flow-detail">
+              <div>
+                <h3 id="flow-detail-title">Voice pool</h3>
+                <p id="flow-detail-body">One fixed pool of 64 voices is shared across all channels. Allocation is round-robin; when the pool is full, the oldest or lowest-velocity voice is stolen. No voice allocates during playback.</p>
+                <div class="flow-tags" id="flow-detail-tags">
+                  <span>Round-robin</span><span>Voice stealing</span><span>Fixed capacity</span>
+                </div>
+              </div>
+              <span class="flow-index" id="flow-index">01 / 08</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="engine-section" id="contract">
+        <div class="container">
+          <p class="section-label"><span class="num">02</span> Realtime contract</p>
+          <div class="contract-grid">
+            <div class="contract-copy">
+              <h2 class="display">No allocation. No locks. <em>No excuses.</em></h2>
+              <p>The callback owns a preallocated mix buffer and a fixed voice pool. Commands arrive through a bounded ring. Structural edits are built on the control thread and swapped at a block boundary, so the render path never waits on a mutex.</p>
+              <p>The displaced graph travels back through a second ring. The control thread drops it. Destruction is off the audio path, and the callback stays bounded.</p>
+              <div class="contract-facts">
+                <div class="fact"><strong>4096</strong><span>Command slots</span></div>
+                <div class="fact"><strong>512</strong><span>Garbage slots</span></div>
+                <div class="fact"><strong>512</strong><span>Frames per block</span></div>
+                <div class="fact"><strong>64</strong><span>Shared voices</span></div>
+                <div class="fact"><strong>960</strong><span>Ticks per quarter</span></div>
+                <div class="fact"><strong>0</strong><span>Locks on path</span></div>
+              </div>
+            </div>
+            <div class="code-panel">
+              <div class="code-head"><span><strong>Callback shape</strong> / illustrative</span><span>Rust</span></div>
+              <pre class="code-body" tabindex="0" role="region" aria-label="Illustrative callback sketch"><code><span class="c-dim">// Illustrative sketch, not shipped source.</span>
+<span class="c-orange">fn</span> <span class="c-cyan">callback</span>(&amp;<span class="c-orange">mut</span> self, out: &amp;<span class="c-orange">mut</span> [<span class="c-green">f32</span>]) {
+    self.commands.drain(|cmd| self.apply(cmd)); <span class="c-dim">// bounded</span>
+    self.transport.advance(<span class="c-paper">512</span>);          <span class="c-dim">// 960 PPQ</span>
+    self.voices.render(&amp;<span class="c-orange">mut</span> self.mix);       <span class="c-dim">// fixed pool</span>
+    self.master.process(&amp;<span class="c-orange">mut</span> self.mix);      <span class="c-dim">// inserts</span>
+    self.limiter.process(&amp;<span class="c-orange">mut</span> self.mix);      <span class="c-dim">// ceiling</span>
+    out.copy_from_slice(&amp;self.mix);              <span class="c-dim">// 512 frames</span>
+    self.garbage.publish(self.retired());        <span class="c-dim">// off-path drop</span>
+}</code></pre>
+              <p class="code-note">The real engine is split across crates and uses its own command enum, transport and processor traits. This sketch shows the shape of the contract, not the source.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="engine-section" id="formats">
+        <div class="container">
+          <p class="section-label"><span class="num">03</span> Format &amp; compatibility</p>
+          <h2 class="display">Two containers. <em>One truth.</em></h2>
+          <p class="section-lede">The native project is a deliberately small archive with integrity checks at every layer. The legacy reader is a documented partial path, with a sidecar for round-tripping REDRAW state.</p>
+
+          <div class="format-grid">
+            <article class="format-card">
+              <div class="format-head">
+                <div>
+                  <h3>.rdp</h3>
+                  <p>Native / authoritative</p>
+                </div>
+                <span class="tag" style="--family: var(--orange-deep);">Lossless</span>
+              </div>
+              <div class="file-anatomy">
+                <div class="zip-label"><span>Stored ZIP</span><span>2 entries</span></div>
+                <div class="file-entry"><strong>redraw.json</strong><span>JSON header</span></div>
+                <div class="file-entry"><strong>project.bin</strong><span>zlib + bincode body</span></div>
+              </div>
+              <ul class="format-list">
+                <li>Header, both ZIP CRCs, body CRC and length are validated.</li>
+                <li>Body capped at 256 MiB; container capped at 512 MiB.</li>
+                <li>Atomic same-directory temporary write, then rename.</li>
+                <li>Header-only reads support the recovery list without decoding the body.</li>
+              </ul>
+              <div class="recovery-line"><span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> 5-minute autosave · newest 10 snapshots</div>
+            </article>
+
+            <article class="format-card dark">
+              <div class="format-head">
+                <div>
+                  <h3>.flp</h3>
+                  <p>Legacy / partial by design</p>
+                </div>
+                <span class="tag" style="--family: var(--cyan-bright);">Documented</span>
+              </div>
+              <div class="file-anatomy">
+                <div class="zip-label"><span>TLV grammar</span><span>Varint events</span></div>
+                <div class="file-entry"><strong>Core import</strong><span>Metadata / channels / notes</span></div>
+                <div class="file-entry"><strong>Unknown events</strong><span>Retained raw</span></div>
+                <div class="file-entry"><strong>RDPXFLP1</strong><span>Sidecar round-trip</span></div>
+              </div>
+              <ul class="format-list">
+                <li>Source PPQ is converted to 960; unknown events and source metadata are retained.</li>
+                <li>Export regenerates core events and re-emits retained raw events.</li>
+                <li>Byte-for-byte interoperability with other hosts is not claimed.</li>
+                <li>External fixtures are opt-in and never shipped.</li>
+              </ul>
+              <div class="recovery-line"><span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> 74 legacy labels resolved at load</div>
+            </article>
+          </div>
+
+          <div class="format-matrix-wrap" tabindex="0" role="region" aria-label="Export and import support by format">
+            <table class="matrix">
+              <caption class="sr-only">Export and import support by format</caption>
+              <thead>
+                <tr><th scope="col">Format</th><th scope="col">Native</th><th scope="col">Import</th><th scope="col">Lossless</th><th scope="col">Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>.rdp</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td>Authoritative project state; atomic save and recovery reads.</td></tr>
+                <tr><td>.flp</td><td class="partial">Partial</td><td class="partial">Partial</td><td class="partial">Sidecar</td><td>Core events plus retained unknowns; not byte-identical.</td></tr>
+                <tr><td>WAV</td><td class="yes">Yes</td><td>—</td><td class="yes">PCM / float</td><td>16/24/32-bit PCM or 32-bit float; 8–192 kHz.</td></tr>
+                <tr><td>AIFF</td><td class="yes">Yes</td><td>—</td><td class="yes">PCM</td><td>16/24/32-bit PCM; native path, no external tools.</td></tr>
+                <tr><td>MP3 / OGG / FLAC</td><td class="partial">ffmpeg</td><td>—</td><td class="partial">Encoder-dependent</td><td>Streamed as interleaved f32le; no temporary PCM file.</td></tr>
+                <tr><td>MP4 / MOV / AVI</td><td class="partial">ffmpeg</td><td>—</td><td class="partial">Encoder-dependent</td><td>Original static 1280×720 / 30 canvas; no external assets.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="engine-section" id="export-lab">
+        <div class="container">
+          <p class="section-label"><span class="num">04</span> Export lab</p>
+          <h2 class="display">Render something <em>real.</em></h2>
+          <p class="section-lede">The application renders offline in 512-frame blocks with automation included and a two-second default tail. This lab does a smaller version in your browser: a short original phrase, a chosen bit depth, and a genuine WAV file.</p>
+
+          <div class="export-lab">
+            <div class="export-controls">
+              <h3>Export lab</h3>
+              <p>Two to sixteen bars of an original REDRAW-style sketch, rendered with OfflineAudioContext and encoded locally. Nothing is uploaded.</p>
+              <div class="export-field">
+                <span>Bit depth</span>
+                <div class="segmented">
+                  <label><input type="radio" name="export-format" value="16" checked><span>16-bit PCM</span></label>
+                  <label><input type="radio" name="export-format" value="24"><span>24-bit PCM</span></label>
+                  <label><input type="radio" name="export-format" value="float32"><span>32-bit float</span></label>
+                </div>
+              </div>
+              <div class="export-field">
+                <label for="export-rate">Sample rate</label>
+                <select class="tone-select" id="export-rate">
+                  <option value="44100">44,100 Hz</option>
+                  <option value="48000" selected>48,000 Hz</option>
+                  <option value="96000">96,000 Hz</option>
+                </select>
+              </div>
+              <div class="export-field">
+                <label for="export-bars">Length</label>
+                <select class="tone-select" id="export-bars">
+                  <option value="2">2 bars</option>
+                  <option value="4" selected>4 bars</option>
+                  <option value="8">8 bars</option>
+                  <option value="16">16 bars</option>
+                </select>
+              </div>
+              <button class="btn" id="export-render" type="button">Render WAV</button>
+              <p class="export-note">Browser render, capped at 16 bars. The desktop engine adds song/pattern scope, automation, a release tail, AIFF, and optional ffmpeg formats.</p>
+              <noscript><p class="noscript-note">The export lab needs JavaScript. The engine notes and format tables on this page are static.</p></noscript>
+            </div>
+
+            <div class="export-result">
+              <div class="export-result-head">
+                <span><strong>Output</strong> / preview</span>
+                <span id="export-format-label">Awaiting render</span>
+              </div>
+              <div class="export-canvas-wrap">
+                <canvas class="export-canvas" id="export-canvas" aria-hidden="true"></canvas>
+              </div>
+              <div class="export-stats">
+                <div class="export-stat"><strong id="export-frames">—</strong><span>Frames</span></div>
+                <div class="export-stat"><strong id="export-duration">—</strong><span>Duration</span></div>
+                <div class="export-stat"><strong id="export-peak">—</strong><span>Peak</span></div>
+                <div class="export-stat"><strong id="export-size">—</strong><span>File size</span></div>
+              </div>
+              <div class="export-progress" aria-hidden="true"><i id="export-progress"></i></div>
+              <div class="export-actions">
+                <span class="export-status" id="export-status" aria-live="polite">Choose a format and render.</span>
+                <a class="export-download" id="export-download" href="#" download>Download WAV</a>
+              </div>
+              <p class="export-footnote">Peak is measured from the rendered float buffer before encoding. File size includes the 44-byte canonical WAV header. This is a demonstration, not a benchmark of the native renderer.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="provenance" id="provenance">
+      <div class="container">
+        <p class="kicker"><span class="dot"></span> 05 / Provenance</p>
+        <div class="provenance-grid">
+          <div>
+            <h2 class="display">Drawn, not <em>traced.</em></h2>
+            <p class="provenance-quote">The work began with file inventories, export tables, and observable behavior — then became a new machine with its own architecture.</p>
+          </div>
+          <div class="provenance-copy">
+            <p>No engine code was decompiled. DSP algorithms follow published technique: PolyBLEP oscillators, RBJ biquads, TPT state-variable filters, FDN reverberation, look-ahead limiting, STFT analysis, and granular overlap-add. Where a reference behavior is not publicly knowable, REDRAW ships a documented equivalent-class implementation and claims no bit-identical output.</p>
+            <p><strong>No third-party presets, samples, fonts, icons, artwork, or project files are bundled.</strong> The only legacy strings shipped are exact-match keys in the load-time compatibility table; they are never displayed as current names.</p>
+            <div class="zero-grid">
+              <div class="zero-cell"><strong>0</strong><span>Decompiled engine lines</span></div>
+              <div class="zero-cell"><strong>0</strong><span>Bundled third-party assets</span></div>
+            </div>
+            <div class="receipt-dark" role="group" aria-label="Acceptance receipt">
+              <div class="stamp" aria-hidden="true">Verified<br>build</div>
+              <div class="ledger-head" style="padding-right: 74px;">
+                <div>
+                  <h3>Acceptance receipt</h3>
+                  <p>REDRAW 0.16 / post-Phase-16</p>
+                </div>
+              </div>
+              <div class="ledger-row"><span>Workspace tests</span><span>172 passed</span></div>
+              <div class="ledger-row"><span>Ignored by design</span><span>1</span></div>
+              <div class="ledger-row"><span>Release warnings</span><span>0</span></div>
+              <div class="ledger-row"><span>Legacy labels resolved</span><span>74</span></div>
+              <div class="ledger-row"><span>Borrowed samples</span><span>0</span></div>
+              <div class="ledger-foot">
+                <span>cargo build --release</span>
+                <span>WAV verified · 48 kHz / 24-bit</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="engine-main">
+      <section class="engine-section" id="limits">
+        <div class="container">
+          <p class="section-label"><span class="num">06</span> Deliberate limits</p>
+          <h2 class="display">What it does not do. <em>Yet.</em></h2>
+          <p class="section-lede">These are implemented behaviors, not silent failures. A smaller honest surface is easier to trust than a broad claim with holes in it.</p>
+          <div class="limits">
+            <details class="limit">
+              <summary>Playlist audio, MIDI and automation clips are placeholders</summary>
+              <div class="limit-body">Pattern clips produce scheduled events. Audio, MIDI and automation blocks are editable placeholders in this phase and do not route audio or events. They are visible in the playlist, but they are not yet part of the render.</div>
+            </details>
+            <details class="limit">
+              <summary>Send levels exist in the model, not as per-strip knobs</summary>
+              <div class="limit-body">Four sends exist in the project and engine model. The mixer draws the strips, inserts and master; it does not yet draw a send knob on every strip. The routing is real, the control surface is incomplete.</div>
+            </details>
+            <details class="limit">
+              <summary>Peak meters are instantaneous</summary>
+              <div class="limit-body">Meters show post-insert, pre-master peaks and decay with the control block. There is no peak-hold and no loudness history yet.</div>
+            </details>
+            <details class="limit">
+              <summary>VST hosting is partial</summary>
+              <div class="limit-body">VST2 effects are hosted in-process on Windows through a locally declared ABI. VST3 bundles are discovered and probed, but their COM runtime is not hosted. Hosted instruments, MIDI to plug-ins, out-of-process isolation, and crash-safe third-party chunk ownership remain future work. No third-party plug-in is bundled.</div>
+            </details>
+            <details class="limit">
+              <summary>There is no MIDI clock output</summary>
+              <div class="limit-body">SMF type 0/1 import and export at 960 PPQ, live input, recording, CC/pan capture and panic are implemented. MIDI clock output is not.</div>
+            </details>
+            <details class="limit">
+              <summary>Automation lanes are global; playlist blocks do not reference them</summary>
+              <div class="limit-body">Project lanes support linear, smooth and step segments with tension, and route at control rate. Playlist automation blocks are placeholders. There is no LFO or shape generator for automation yet.</div>
+            </details>
+            <details class="limit">
+              <summary>Pattern clips do not time-stretch</summary>
+              <div class="limit-body">Pattern clips support repeat, transpose and velocity gain. Time-stretch is not applied to pattern clips, and audio clip playback is not routed yet.</div>
+            </details>
+            <details class="limit">
+              <summary>Sampler and Soundfont Player need your content</summary>
+              <div class="limit-body">Default synth patches and drum kits are synthesized in code. The sampler and Soundfont player require user-supplied samples; no sample or preset library ships with REDRAW. The exported video canvas is static, and it is intentionally not a visualizer.</div>
+            </details>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="closing-cta">
+      <svg class="cta-wave" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 214 C90 214 104 168 168 168 S246 226 318 204 S414 116 492 132 S588 236 664 216 S754 96 838 124 S936 238 1014 210 S1116 88 1192 120 S1308 220 1440 176"></path>
+        <path d="M0 244 C110 244 130 206 192 206 S276 254 348 238 S452 166 528 182 S620 258 704 244 S802 148 884 172 S980 258 1062 238 S1168 138 1248 162 S1352 236 1440 208"></path>
+      </svg>
+      <div class="container cta-inner">
+        <div>
+          <h2 class="display">Hear what we <em>drew.</em></h2>
+          <p class="cta-copy">Forty-nine instruments, seventy-four processors, one fixed callback. Go back to the console and make a pattern, or browse the full rack.</p>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn-dark" href="index.html#console">Play the console <span aria-hidden="true">↗</span></a>
+          <a class="btn" href="instruments.html">Browse the rack <span aria-hidden="true">→</span></a>
+          <p class="cta-note">No samples. No autoplay. Just click.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" style="color: var(--paper);">
+              <rect x="1" y="1" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M6 21h5l3-9 4 17 4-13 3 8 9-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+              <circle cx="6" cy="21" r="1.7" fill="#ef4e22"/>
+            </svg>
+            <span class="brand-type">
+              <span class="brand-word">REDRAW</span>
+              <span class="brand-sub">Clean-room audio workstation</span>
+            </span>
+          </a>
+          <p class="footer-note">A pattern-based digital audio workstation built from first principles in Rust. Original engines, original processors, original names.</p>
+        </div>
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <ul>
+            <li><a href="instruments.html">49 instruments</a></li>
+            <li><a href="effects.html">74 effects</a></li>
+            <li><a href="engine.html">Engine notes</a></li>
+            <li><a href="index.html#console">Live console</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Inside</h3>
+          <ul>
+            <li><a href="engine.html#signal-path">Signal path</a></li>
+            <li><a href="engine.html#formats">Project format</a></li>
+            <li><a href="engine.html#export-lab">Export lab</a></li>
+            <li><a href="engine.html#provenance">Provenance</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-word" aria-hidden="true">REDRAW</div>
+      <div class="footer-bottom">
+        <p class="footer-legal">© 2026 REDRAW. Original clean-room work. No third-party DAW code, presets, samples, fonts, icons, artwork, or project files are included. Browser demos are illustrative; the application is a native Rust build.</p>
+        <p>Set in Archivo &amp; IBM Plex Mono · <a href="assets/fonts/OFL-Archivo.txt">OFL</a> / <a href="assets/fonts/OFL-IBMPlexMono.txt">OFL</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <dialog class="menu-dialog" id="site-menu" aria-label="Site menu">
+    <div class="menu-dialog-inner">
+      <div class="menu-dialog-head">
+        <span class="brand-word">REDRAW</span>
+        <button class="icon-btn" id="menu-close" type="button" aria-label="Close menu">×</button>
+      </div>
+      <nav class="menu-links" aria-label="Mobile">
+        <a href="index.html">Overview <span>00</span></a>
+        <a href="instruments.html">Instruments <span>49</span></a>
+        <a href="effects.html">Effects <span>74</span></a>
+        <a href="engine.html">Engine <span>05</span></a>
+      </nav>
+      <a class="btn btn-primary" href="index.html#console">Open the console</a>
+      <p class="console-note">A browser sketch of the real engine. Audio starts only when you ask.</p>
+    </div>
+  </dialog>
+
+  <div class="sr-only" id="sr-status" aria-live="polite"></div>
+
+  <script src="assets/data.js" defer></script>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>

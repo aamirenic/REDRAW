@@ -1,0 +1,13 @@
+[package]
+name = "redraw-plugins"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+redraw-synths = { path = "../synths" }
+redraw-effects = { path = "../effects" }
+
+[lib]
+name = "redraw_plugins"

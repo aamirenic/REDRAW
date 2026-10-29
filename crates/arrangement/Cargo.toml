@@ -1,0 +1,12 @@
+[package]
+name = "redraw-arrangement"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+redraw-sequencer = { path = "../sequencer" }
+
+[lib]
+name = "redraw_arrangement"

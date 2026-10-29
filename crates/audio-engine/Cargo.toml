@@ -1,0 +1,18 @@
+[package]
+name = "redraw-audio-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+redraw-dsp = { path = "../dsp" }
+redraw-mixer = { path = "../mixer" }
+redraw-sequencer = { path = "../sequencer" }
+redraw-arrangement = { path = "../arrangement" }
+redraw-automation = { path = "../automation" }
+rtrb.workspace = true
+cpal.workspace = true
+
+[lib]
+name = "redraw_audio_engine"

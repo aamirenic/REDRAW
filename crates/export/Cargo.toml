@@ -1,0 +1,19 @@
+[package]
+name = "redraw-export"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+redraw-shared = { path = "../shared" }
+redraw-audio-engine = { path = "../audio-engine" }
+redraw-sequencer = { path = "../sequencer" }
+redraw-arrangement = { path = "../arrangement" }
+redraw-automation = { path = "../automation" }
+redraw-plugins = { path = "../plugins" }
+hound.workspace = true
+ureq.workspace = true
+zip.workspace = true
+
+[lib]
+name = "redraw_export"
